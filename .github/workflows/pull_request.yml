@@ -24,8 +24,8 @@ jobs:
         with:
           message: "@${{ github.actor }} GitHub Actions has started building this code. Check status at 'https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}/checks'"
           allow-repeats: false
-      - name: Generate Version
-        id: generate_version
+      - name: Generate Vars
+        id: generate_vars
         run: |
           # Just Tag
           IMAGE_TAG=pr-${{ github.event.pull_request.number }}-$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-8)
@@ -53,8 +53,8 @@ jobs:
       
       - name: Echo Output
         run: |
-          echo "Image from Output: ${{ steps.generate_version.outputs.image }}"
-          echo "Repo from Output: ${{ steps.generate_version.outputs.image_name }}"
+          echo "Image from Output: ${{ steps.generate_vars.outputs.image }}"
+          echo "Repo from Output: ${{ steps.generate_vars.outputs.image_name }}"
           echo "Image from Env:  ${{ env.IMAGE }}"
           echo "Repo from Env:  ${{ env.REPO }}"
 

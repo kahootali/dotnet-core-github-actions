@@ -17,13 +17,6 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v1
-      - name: Initialize Pipeline
-        uses: mshick/add-pr-comment@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          message: "@${{ github.actor }} GitHub Actions has started building this code. Check status at 'https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}/checks'"
-          allow-repeats: false
       - name: Generate Version
         id: generate_version
         uses: anothrNick/github-tag-action@1.23.0
@@ -34,6 +27,20 @@ jobs:
           DEFAULT_BUMP: "patch"
           INITIAL_VERSION: 0.0.0
           RELEASE_BRANCHES: main
+      - name: Generate Vars
+        id: generate_vars
+        run: |
+          IMAGE_TAG=${{ steps.generate_version.outputs.new_tag }}
+          # Just Image name
+          IMAGE_NAME=${{ github.repository }}
+          #Image ID= Name + Tag
+          IMAGE_ID=$IMAGE_NAME:$IMAGE_TAG
+          IMAGE_REPO=$REGISTRY/$IMAGE_ID
+          echo "Image: $IMAGE_REPO"
+          echo "::set-output name=image::$IMAGE_REPO"
+          echo "::set-output name=image_name::$IMAGE_NAME"
+          echo REPO=$IMAGE_NAME >> $GITHUB_ENV
+          echo IMAGE=$(echo "$REGISTRY/$IMAGE_ID") >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -47,7 +54,10 @@ jobs:
       
       - name: Echo Output
         run: |
-          echo "Image from Output: ${{ steps.generate_version.outputs.new_tag }}"
+          echo "Image from Output: ${{ steps.generate_vars.outputs.image }}"
+          echo "Repo from Output: ${{ steps.generate_vars.outputs.image_name }}"
+          echo "Image from Env:  ${{ env.IMAGE }}"
+          echo "Repo from Env:  ${{ env.REPO }}"
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
@@ -58,7 +68,7 @@ jobs:
           push: true
           build-args: BUILD_PARAMETERS=${{ env.BUILD_PARAMETERS }}
           cache-to: type=inline
-          tags: ${{ steps.generate_version.outputs.new_tag }}
+          tags: ${{ env.IMAGE }}
 
       - name: Push tag
         uses: anothrNick/github-tag-action@1.23.0
