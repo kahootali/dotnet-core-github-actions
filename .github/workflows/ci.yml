@@ -56,8 +56,10 @@ jobs:
           context: .
           pull: true
           push: true
-          tags: |
-            ${{ steps.generate_version.outputs.image }}
+          tags: ${{ steps.generate_version.outputs.image }}
+          
+          #$REGISTRY/$ORGANIZATION_NAME/$REPO_NAME:pr-${{ github.event.pull_request.number }}-$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-8)
+            
       - name: Comment on PR
         uses: mshick/add-pr-comment@v1
         env:
