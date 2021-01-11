@@ -56,8 +56,8 @@ jobs:
       - name: Echo Output
         run: |
           echo "Image from Output: ${{ steps.generate_version.outputs.image }}"
-          echo "Image from Output2:  ${{ env.IMAGE }}"
-          echo "Repo from Output:  ${{ env.REPO }}"
+          echo "Image from Env:  ${{ env.IMAGE }}"
+          echo "Repo from Env:  ${{ env.REPO }}"
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
@@ -68,7 +68,7 @@ jobs:
           push: true
           build-args: BUILD_PARAMETERS=${{ env.BUILD_PARAMETERS }}
           cache-to: type=inline
-          tags: '${{ steps.generate_version.outputs.image }}'
+          tags: ${{ env.IMAGE }}
           
           #$REGISTRY/$ORGANIZATION_NAME/$REPO_NAME:pr-${{ github.event.pull_request.number }}-$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-8)
             
