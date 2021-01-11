@@ -23,9 +23,8 @@ jobs:
         uses: mshick/add-pr-comment@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_WORKFLOW_URL: https://github.com/${ORGANIZATION_NAME}/${REPO_NAME}/actions/runs/$GITHUB_RUN_ID
         with:
-          message: '@${{ github.actor }} GitHub Actions has started building this code. Check status at ${{ env.GITHUB_WORKFLOW_URL }}'
+          message: "@${{ github.actor }} GitHub Actions has started building this code. Check status at 'https://github.com/${ORGANIZATION_NAME}/${REPO_NAME}/actions/runs/$GITHUB_RUN_ID'"
           allow-repeats: false
       - name: Initialize
         run: |
@@ -37,8 +36,9 @@ jobs:
           IMAGE_ID=$IMAGE_NAME:$IMAGE_TAG
           IMAGE=$REGISTRY/$IMAGE_ID
           echo "Image: $IMAGE"
-          echo ::set-env name=IMAGE::$IMAGE
-          echo ::set-env name=IMAGE_NAME::$IMAGE_NAME
+          mkdir .env || true
+          echo "$IMAGE >> $GITHUB_ENV
+          echo $IMAGE_NAME >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -57,7 +57,7 @@ jobs:
           pull: true
           push: true
           tags: |
-            $IMAGE
+            ${{ env.IMAGE }} 
           labels: |
             Developer: "Ali Kahoot"
       - name: Comment on PR
