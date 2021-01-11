@@ -1,0 +1,68 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  Build-and-Push-Image:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
+    name: Build and Push Image to Image registry
+    env:
+      REGISTRY: docker.io
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v1
+      - name: Initialize Pipeline
+        uses: mshick/add-pr-comment@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          message: "@${{ github.actor }} GitHub Actions has started building this code. Check status at 'https://github.com/${{ github.repository }}/commit/${{ github.event.pull_request.head.sha }}/checks'"
+          allow-repeats: false
+      - name: Generate Version
+        id: generate_version
+        uses: anothrNick/github-tag-action@1.23.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DRY_RUN: true
+          DEFAULT_BUMP: "patch"
+          RELEASE_BRANCHES: main
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Echo Output
+        run: |
+          echo "Image from Output: ${{ steps.generate_version.outputs.new_tag }}"
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          pull: true
+          push: true
+          build-args: BUILD_PARAMETERS=${{ env.BUILD_PARAMETERS }}
+          cache-to: type=inline
+          tags: ${{ steps.generate_version.outputs.new_tag }}
+
+      - name: Push tag
+        uses: anothrNick/github-tag-action@1.23.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: true
+          DEFAULT_BUMP: "patch"
+          RELEASE_BRANCHES: main
