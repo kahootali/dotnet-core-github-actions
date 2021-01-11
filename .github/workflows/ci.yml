@@ -54,8 +54,11 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
+          file: ./Dockerfile
           pull: true
           push: true
+          build-args: BUILD_PARAMETERS=${{ env.BUILD_PARAMETERS }}
+          cache-to: type=inline
           tags: ${{ steps.generate_version.outputs.image }}
           
           #$REGISTRY/$ORGANIZATION_NAME/$REPO_NAME:pr-${{ github.event.pull_request.number }}-$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-8)
