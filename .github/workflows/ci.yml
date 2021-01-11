@@ -49,6 +49,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Echo Output
+        run: |
+          echo "Image from Output: ${{ steps.generate_version.outputs.image }}"
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
@@ -59,7 +63,7 @@ jobs:
           push: true
           build-args: BUILD_PARAMETERS=${{ env.BUILD_PARAMETERS }}
           cache-to: type=inline
-          tags: ${{ steps.generate_version.outputs.image }}
+          tags: '${{ steps.generate_version.outputs.image }}'
           
           #$REGISTRY/$ORGANIZATION_NAME/$REPO_NAME:pr-${{ github.event.pull_request.number }}-$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-8)
             
