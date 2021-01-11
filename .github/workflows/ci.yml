@@ -36,8 +36,7 @@ jobs:
           IMAGE_ID=$IMAGE_NAME:$IMAGE_TAG
           IMAGE=$REGISTRY/$IMAGE_ID
           echo "Image: $IMAGE"
-          mkdir .env || true
-          echo "$IMAGE >> $GITHUB_ENV
+          echo $IMAGE >> $GITHUB_ENV
           echo $IMAGE_NAME >> $GITHUB_ENV
 
       - name: Set up QEMU
