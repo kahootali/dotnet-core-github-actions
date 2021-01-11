@@ -35,10 +35,13 @@ jobs:
           IMAGE_NAME=$ORGANIZATION_NAME/$REPO_NAME
           #Image ID= Name + Tag
           IMAGE_ID=$IMAGE_NAME:$IMAGE_TAG
-          IMAGE=$REGISTRY/$IMAGE_ID
-          echo "Image: $IMAGE"
-          echo "::set-output image=$IMAGE"
+          IMAGE_REPO=$REGISTRY/$IMAGE_ID
+          echo "Image: $IMAGE_REPO"
+          echo "::set-output image=$IMAGE_REPO"
           echo "::set-output image_name=$IMAGE_NAME"
+          echo REPO=$IMAGE_NAME >> $GITHUB_ENV
+          echo IMAGE=$(echo "$REGISTRY/$IMAGE_ID") >> $GITHUB_ENV
+
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -53,6 +56,8 @@ jobs:
       - name: Echo Output
         run: |
           echo "Image from Output: ${{ steps.generate_version.outputs.image }}"
+          echo "Image from Output2:  ${{ env.IMAGE }}"
+          echo "Repo from Output:  ${{ env.REPO }}"
 
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v2
