@@ -24,9 +24,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          message: "@${{ github.actor }} GitHub Actions has started building this code. Check status at 'https://github.com/${{ env.ORGANIZATION_NAME }}/${REPO_NAME}/actions/runs/$GITHUB_RUN_ID'"
+          message: "@${{ github.actor }} GitHub Actions has started building this code. Check status at 'https://github.com/${{ env.ORGANIZATION_NAME }}/${{ env.REPO_NAME }}/actions/runs/$ {{ env.GITHUB_RUN_ID }}'"
           allow-repeats: false
-      - name: Initialize
+      - name: Generate Version
+        id: generate_version
         run: |
           # Just Tag
           IMAGE_TAG=pr-${{ github.event.pull_request.number }}-$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-8)
@@ -36,8 +37,10 @@ jobs:
           IMAGE_ID=$IMAGE_NAME:$IMAGE_TAG
           IMAGE=$REGISTRY/$IMAGE_ID
           echo "Image: $IMAGE"
-          echo "$IMAGE" >> $GITHUB_ENV
-          echo "$IMAGE_NAME" >> $GITHUB_ENV
+          echo "::set-output image=$IMAGE"
+          echo "::set-output image_name=$IMAGE_NAME"
+          #echo "$IMAGE" >> $GITHUB_ENV
+          #echo "$IMAGE_NAME" >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
@@ -56,7 +59,7 @@ jobs:
           pull: true
           push: true
           tags: |
-            "${{ env.IMAGE }}"
+            "${{ steps.generate_version.outputs.image }}"
           labels: |
             Developer: "Ali Kahoot"
       - name: Comment on PR
