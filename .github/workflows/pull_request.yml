@@ -1,4 +1,4 @@
-name: CI
+name: Pull Request
 
 on:
   pull_request:
@@ -11,8 +11,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build and Push Image to Image registry
     env:
-      REPO_NAME: ${{ github.event.repository.name }}
-      ORGANIZATION_NAME: kahootali
       REGISTRY: docker.io
     defaults:
       run:
@@ -32,7 +30,7 @@ jobs:
           # Just Tag
           IMAGE_TAG=pr-${{ github.event.pull_request.number }}-$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-8)
           # Just Image name
-          IMAGE_NAME=$ORGANIZATION_NAME/$REPO_NAME
+          IMAGE_NAME=${{ github.repository }}
           #Image ID= Name + Tag
           IMAGE_ID=$IMAGE_NAME:$IMAGE_TAG
           IMAGE_REPO=$REGISTRY/$IMAGE_ID
@@ -70,9 +68,7 @@ jobs:
           build-args: BUILD_PARAMETERS=${{ env.BUILD_PARAMETERS }}
           cache-to: type=inline
           tags: ${{ env.IMAGE }}
-          
-          #$REGISTRY/$ORGANIZATION_NAME/$REPO_NAME:pr-${{ github.event.pull_request.number }}-$(echo ${{ github.event.pull_request.head.sha }} | cut -c1-8)
-            
+
       - name: Comment on PR
         uses: mshick/add-pr-comment@v1
         env:
