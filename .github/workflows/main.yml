@@ -17,6 +17,8 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v1
+        with:
+          fetch-depth: 0
       - name: Generate Version
         id: generate_version
         uses: anothrNick/github-tag-action@1.34.0
